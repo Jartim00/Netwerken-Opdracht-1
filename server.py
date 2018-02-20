@@ -1,30 +1,10 @@
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-from SocketServer import ThreadingMixIn
-import urlparse
-import time
-from threading import Thread
-import os
+from twisted.web import server, resource
+from twisted.internet import reactor
 
-class GetHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Last-Modified', self.date_time_string(time.time()))
-        self.end_headers()
-        self.wfile.write('<!DOCTYPE html>\n'+
-                          '<html>\n'+
-                          '<body style="background-color:powderblue;">\n'+
-                          '<h1>My first Heading</h1>\n'+
-                          '<p>My first paragraph\n'+
-                          '</body>\n'+
-                          '</html>')
-
-class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
-    pass
-
-def serve_on_port(port):
-    print "started server on: http://localhost:" + str(port)
-    server = ThreadingHTTPServer(("localhost",port), GetHandler)
-    server.serve_forever()
+class SimpleWebserver(resource.Resource):
+    isLeaf = True
+    def render_GET(self, request):
+        return "<html>Hello, world!</html>"
 
 if __name__ == '__main__':    
     print "######################## MENU #################################"
@@ -32,11 +12,14 @@ if __name__ == '__main__':
     print "######################## INTERMISSION #########################"
     inputnumber = input('select number: ')
     print "---------------------------------------------------------------"
+    site = server.Site(SimpleWebserver())
     if inputnumber > 0:
         inputnumber = 8000+inputnumber
         for s in range(8000,inputnumber):
-            t = Thread(target=serve_on_port, args=[s])
-            t.start()
+            print "Starting server on: http://localhost:" + str(s)
+            reactor.listenTCP(s, site)
+        print "---------------------------------------------------------------"
+        print "######################## END ##################################"
+        reactor.run()
     else:
         print "Wrong input, please try again"
-        #os.system('cls' if os.name == 'nt' else 'clear')
