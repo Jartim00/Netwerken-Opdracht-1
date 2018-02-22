@@ -24,13 +24,11 @@ def transfer(src, dst, direction):
                     break
             dst.send(handle(buffer))
         except Exception as inst:
-            print "Ip released" 
+            print "Ip released"
             break
     try:
-        src.shutdown(socket.SHUT_RDWR)
         src.close()    
 
-        dst.shutdown(socket.SHUT_RDWR)
         dst.close()
     except Exception as inst:
         print inst
@@ -53,6 +51,8 @@ def server(local_host, local_port, remote_host, remote_port, max_connection):
 
         remote_socket.connect((remote_host, remote_port[loadBalanceIndex]))
         loadBalanceIndex = (loadBalanceIndex + 1) % len(remote_port)
+        
+        print "Load balancer increased " + str(loadBalanceIndex) 
 
         s = threading.Thread(target=transfer, args=(
             remote_socket, local_socket, False))
